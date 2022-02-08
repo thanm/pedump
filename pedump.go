@@ -171,6 +171,15 @@ func main() {
 		log.Fatal("select one of -r/-h/-s/-t to dump something")
 	}
 	for _, arg := range flag.Args() {
+
+		isarch, err := isArchive(arg)
+		if err != nil {
+			log.Fatal("opening %s: %v", arg, err)
+		}
+		if isarch {
+			visitArchive(arg)
+			continue
+		}
 		f, err := pe.Open(arg)
 		if err != nil {
 			log.Fatal(err)
