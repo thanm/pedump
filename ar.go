@@ -45,6 +45,7 @@ func visitArchive(pn string) {
 	for k, ent := range ents {
 		verb(1, "archive entry %d: name=%s offset=%d sizew=%d",
 			k, ent.name, ent.offset, ent.size)
+		fmt.Printf("\narchive element %s:\n", ent.name)
 		sr := io.NewSectionReader(f, ent.offset, ent.size)
 		f, err := pe.NewFile(sr)
 		if err != nil {
