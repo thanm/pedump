@@ -17,6 +17,7 @@ var secheadersflag = flag.Bool("h", false, "Dump section headers")
 var fileheadersflag = flag.Bool("f", false, "Dump file headers")
 var contentsflag = flag.Bool("s", false, "Dump section contents")
 var groupsflag = flag.Bool("g", false, "Dump info on COMDAT groups")
+var aslrflag = flag.Bool("A", false, "Dump info on ASLR settings")
 var whichflag = flag.String("j", "", "Restrict reloc/data dump to specific named section")
 
 func verb(vlevel int, s string, a ...interface{}) {
@@ -67,6 +68,25 @@ func examine(f *pe.File) {
 	if *fileheadersflag {
 		fmt.Printf("COFF file header:\n%+v\n\n", f.FileHeader)
 		fmt.Printf("COFF optional header:\n%+v\n", f.OptionalHeader)
+	}
+	if *aslrflag {
+		heva := 0
+		dc := uint16(0)
+		switch oh := f.OptionalHeader.(type) {
+		case *pe.OptionalHeader32:
+			dc = oh.DllCharacteristics
+		case *pe.OptionalHeader64:
+			dc = oh.DllCharacteristics
+		}
+		if dc&pe.IMAGE_DLLCHARACTERISTICS_HIGH_ENTROPY_VA != 0 {
+			heva = 1
+		}
+		db := 0
+		if dc&pe.IMAGE_DLLCHARACTERISTICS_DYNAMIC_BASE != 0 {
+			db = 1
+		}
+		fmt.Printf("HIGH_ENTROPY_VA=%d\n", heva)
+		fmt.Printf("DYNAMIC_BASE=%d\n", db)
 	}
 	if *secheadersflag {
 		fmt.Printf("Sections:\n")
@@ -167,8 +187,8 @@ func main() {
 	if flag.NArg() != 1 {
 		log.Fatalf("please supply single filename as arg\n")
 	}
-	if !*relocsflag && !*secheadersflag && !*fileheadersflag && !*contentsflag && !*symsflag {
-		log.Fatal("select one of -r/-h/-s/-t to dump something")
+	if !*groupsflag && !*aslrflag && !*relocsflag && !*secheadersflag && !*fileheadersflag && !*contentsflag && !*symsflag {
+		log.Fatal("select one of -r/-h/-s/-t/-f/-A/-g to dump something")
 	}
 	for _, arg := range flag.Args() {
 
