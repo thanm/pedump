@@ -4,9 +4,9 @@ import (
 	"debug/pe"
 	"flag"
 	"fmt"
+	"gpedump/peflags"
 	"log"
 	"os"
-	"pedump/peflags"
 	"unsafe"
 )
 
